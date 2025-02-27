@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Ninja Break Tree Layers - Three.js Game</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        #instructions {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 20px;
+            background: rgba(0,0,0,0.6);
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+<div id="instructions">Press SPACE or CLICK to break tree layer!</div>
+
+<script>
+let scene, camera, renderer;
+let treeLayers = [];
+let ninja;
+let ninjaPosition = 0;
+
+// Init Three.js Scene
+function init() {
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 5, 15);
+
+    renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Ground
+    const groundGeometry = new THREE.PlaneGeometry(20, 20);
+    const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x228B22, side: THREE.DoubleSide });
+    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+    ground.rotation.x = - Math.PI / 2;
+    scene.add(ground);
+
+    // Create Tree (stacked layers)
+    for (let i = 0; i < 10; i++) {
+        addTreeLayer(i);
+    }
+
+    // Ninja (small cube)
+    const ninjaGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const ninjaMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    ninja = new THREE.Mesh(ninjaGeometry, ninjaMaterial);
+    ninja.position.set(0, 0.5, 0);
+    scene.add(ninja);
+
+    animate();
+}
+
+// Function to add a tree layer
+function addTreeLayer(index) {
+    const layerGeometry = new THREE.BoxGeometry(5, 1, 5);
+    const layerMaterial = new THREE.MeshBasicMaterial({ color: 0x8B4513 });
+    const layer = new THREE.Mesh(layerGeometry, layerMaterial);
+
+    layer.position.set(0, index + 0.5, 0);
+    scene.add(layer);
+    treeLayers.push(layer);
+}
+
+// Break the current tree layer
+function breakLayer() {
+    if (treeLayers.length === 0) return;
+
+    const topLayer = treeLayers.pop();
+    scene.remove(topLayer);
+
+    // Move ninja up to the next layer
+    ninjaPosition++;
+    ninja.position.y = ninjaPosition + 0.5;
+
+    // Check if tree is fully broken
+    if (treeLayers.length === 0) {
+        document.getElementById('instructions').innerHTML = "All layers broken! You win!";
+    }
+}
+
+// Handle Input (Spacebar or Click)
+window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+        breakLayer();
+    }
+});
+
+window.addEventListener('click', () => {
+    breakLayer();
+});
+
+// Game Loop
+function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+}
+
+// Resize Handler
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+init();
+</script>
+
+</body>
+</html>
