@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Ninja Break Tree Layers - Three.js Game</title>
+    <title>Ninja Breaking Tree Layers - Three.js Game</title>
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { display: block; }
@@ -11,25 +11,27 @@
             left: 10px;
             color: white;
             font-family: Arial, sans-serif;
-            font-size: 20px;
-            background: rgba(0,0,0,0.6);
+            font-size: 18px;
+            background: rgba(0,0,0,0.7);
             padding: 10px;
             border-radius: 5px;
+            z-index: 10;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-<div id="instructions">Press SPACE or CLICK to break tree layer!</div>
+<div id="instructions">Press SPACE or CLICK to break tree layer!<br>Score: <span id="score">0</span></div>
 
 <script>
 let scene, camera, renderer;
 let treeLayers = [];
-let ninja;
+let ninja, ninjaMaterial;
 let ninjaPosition = 0;
+let score = 0;
 
-// Init Three.js Scene
+// Initialize Three.js scene
 function init() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -43,7 +45,7 @@ function init() {
     const groundGeometry = new THREE.PlaneGeometry(20, 20);
     const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x228B22, side: THREE.DoubleSide });
     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    ground.rotation.x = - Math.PI / 2;
+    ground.rotation.x = -Math.PI / 2;
     scene.add(ground);
 
     // Create Tree (stacked layers)
@@ -51,9 +53,9 @@ function init() {
         addTreeLayer(i);
     }
 
-    // Ninja (small cube)
+    // Ninja (make it red so it's visible)
     const ninjaGeometry = new THREE.BoxGeometry(1, 1, 1);
-    const ninjaMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    ninjaMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });  // Red color
     ninja = new THREE.Mesh(ninjaGeometry, ninjaMaterial);
     ninja.position.set(0, 0.5, 0);
     scene.add(ninja);
@@ -64,32 +66,36 @@ function init() {
 // Function to add a tree layer
 function addTreeLayer(index) {
     const layerGeometry = new THREE.BoxGeometry(5, 1, 5);
-    const layerMaterial = new THREE.MeshBasicMaterial({ color: 0x8B4513 });
+    const layerMaterial = new THREE.MeshBasicMaterial({ color: 0x8B4513 }); // Brown wood color
     const layer = new THREE.Mesh(layerGeometry, layerMaterial);
 
-    layer.position.set(0, index + 0.5, 0);
+    layer.position.set(0, index + 0.5, 0);  // Each layer is 1 unit tall
     scene.add(layer);
     treeLayers.push(layer);
 }
 
-// Break the current tree layer
+// Function to break the top tree layer
 function breakLayer() {
     if (treeLayers.length === 0) return;
 
     const topLayer = treeLayers.pop();
     scene.remove(topLayer);
 
-    // Move ninja up to the next layer
+    // Move ninja up
     ninjaPosition++;
     ninja.position.y = ninjaPosition + 0.5;
 
-    // Check if tree is fully broken
+    // Increase score
+    score++;
+    document.getElementById('score').innerText = score;
+
+    // Check for win condition
     if (treeLayers.length === 0) {
-        document.getElementById('instructions').innerHTML = "All layers broken! You win!";
+        document.getElementById('instructions').innerHTML = "All layers broken! You win! Final Score: " + score;
     }
 }
 
-// Handle Input (Spacebar or Click)
+// Input handlers
 window.addEventListener('keydown', (e) => {
     if (e.code === 'Space') {
         breakLayer();
@@ -100,19 +106,20 @@ window.addEventListener('click', () => {
     breakLayer();
 });
 
-// Game Loop
+// Render loop
 function animate() {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
 }
 
-// Resize Handler
+// Handle window resizing
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
+// Start the game
 init();
 </script>
 
