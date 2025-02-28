@@ -53,7 +53,7 @@
 <button onclick="showAdNetwork2()">Show Ad Network 2 (AdsTerra - Banner)</button>
 
 <div id="adContainer"></div>
-
+<iframe data-aa='2383575' src='//acceptable.a-ads.com/2383575' style='border:0px; padding:0; width:100%; height:100%; overflow:hidden; background-color: transparent;'></iframe>
 <script>
     let currentAdNetwork = null;
 
@@ -78,30 +78,19 @@
         if (loader) loader.remove();
     }
 
-    function generateCacheBuster() {
-        return `cb=${Date.now()}`;  // Timestamp-based cache buster
-    }
-
-    // MonEtag - Popup Ad
+    // MonEtag - Popup Ad with Cache Buster
     function showAdNetwork1() {
-        if (currentAdNetwork === 'network1') return;
-        currentAdNetwork = 'network1';
-
-        clearAdContainer();
+        clearAdContainer();  // Always clear for fresh load
         showLoader();
 
-        const adContainer = document.getElementById('adContainer');
+        currentAdNetwork = 'network1';
+
+        const cacheBuster = `cb=${Date.now()}_${Math.random().toString(36).substring(7)}`;
+        const monetagUrl = `https://groleegni.net/401/9017009?${cacheBuster}`;
 
         const script = document.createElement('script');
         script.setAttribute('data-ad', 'monetag');
-
-        // Inline script adjusted to include cache buster
-        script.innerHTML = `(function(d,z,s){
-            s.src='https://'+d+'/401/'+z+'?${generateCacheBuster()}';
-            try {
-                (document.body||document.documentElement).appendChild(s);
-            } catch(e) {}
-        })('groleegni.net',9013611,document.createElement('script'))`;
+        script.src = monetagUrl;
 
         script.onload = hideLoader;
         script.onerror = () => {
@@ -111,32 +100,34 @@
 
         document.body.appendChild(script);
 
+        // Failsafe loader hide if ad network doesn't respond in time
         setTimeout(hideLoader, 5000);
     }
 
-    // AdsTerra - Banner Ad
+    // AdsTerra - Banner Ad with Cache Buster
     function showAdNetwork2() {
-        if (currentAdNetwork === 'network2') return;
-        currentAdNetwork = 'network2';
-
-        clearAdContainer();
+        clearAdContainer();  // Always clear for fresh load
         showLoader();
+
+        currentAdNetwork = 'network2';
 
         const adContainer = document.getElementById('adContainer');
 
+        // Create banner target div
         const adDiv = document.createElement('div');
         adDiv.id = 'container-f7ff1fd652ef7b42474e417e75f6f193';
         adDiv.style.width = '100%';
         adDiv.style.height = '100%';
         adContainer.appendChild(adDiv);
 
+        const cacheBuster = `cb=${Date.now()}_${Math.random().toString(36).substring(7)}`;
+        const adsterraUrl = `https://pl25986483.effectiveratecpm.com/f7ff1fd652ef7b42474e417e75f6f193/invoke.js?${cacheBuster}`;
+
         const script = document.createElement('script');
         script.async = true;
         script.setAttribute('data-cfasync', 'false');
         script.setAttribute('data-ad', 'adsterra');
-
-        // Add cache buster to the script src
-        script.src = `https://pl25986483.effectiveratecpm.com/f7ff1fd652ef7b42474e417e75f6f193/invoke.js?${generateCacheBuster()}`;
+        script.src = adsterraUrl;
 
         script.onload = hideLoader;
         script.onerror = () => {
@@ -146,6 +137,7 @@
 
         document.body.appendChild(script);
 
+        // Failsafe loader hide if ad network doesn't respond in time
         setTimeout(hideLoader, 5000);
     }
 </script>
