@@ -23,6 +23,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            position: relative;
         }
         .loader {
             border: 5px solid #f3f3f3;
@@ -31,6 +32,12 @@
             width: 30px;
             height: 30px;
             animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-top: -15px;
+            margin-left: -15px;
+            z-index: 100;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -49,90 +56,84 @@
 
 <script>
     let currentAdNetwork = null;
+    
+    // Function to load MonEtag directly
+    function loadMonEtagScript() {
+        const script = document.createElement('script');
+        script.src = 'https://groleegni.net/401/9013611';
+        script.onerror = function() {
+            console.error('Failed to load MonEtag script');
+            hideLoader();
+        };
+        script.onload = function() {
+            console.log('MonEtag script loaded');
+            hideLoader();
+        };
+        return script;
+    }
 
     function showAdNetwork1() {
-        if (currentAdNetwork === 'network1') return; // Prevent reloading the same ad
+        if (currentAdNetwork === 'network1') return;
         currentAdNetwork = 'network1';
-        showLoader();
-        const adCode = `
-            <script>
-                (function(d, z, s) {
-                    s.src = 'https://' + d + '/401/' + z;
-                    try {
-                        (document.body || document.documentElement).appendChild(s);
-                    } catch (e) {
-                        console.error('Error loading Ad Network 1:', e);
-                    }
-                })('groleegni.net', 9013611, document.createElement('script'));
-            <\/script>
-        `;
-        loadAdInIframe(adCode);
+        
+        const adContainer = document.getElementById('adContainer');
+        // Clear previous content and show loader
+        adContainer.innerHTML = '';
+        const loader = document.createElement('div');
+        loader.className = 'loader';
+        loader.id = 'adLoader';
+        adContainer.appendChild(loader);
+        
+        // Create a container for the ad
+        const adDiv = document.createElement('div');
+        adDiv.id = 'monetag-ad-container';
+        adDiv.style.width = '100%';
+        adDiv.style.height = '100%';
+        adContainer.appendChild(adDiv);
+        
+        // Load the script directly - using the direct URL approach
+        document.body.appendChild(loadMonEtagScript());
+        
+        // Fallback to hide loader after timeout
+        setTimeout(hideLoader, 5000);
     }
 
     function showAdNetwork2() {
-        if (currentAdNetwork === 'network2') return; // Prevent reloading the same ad
+        if (currentAdNetwork === 'network2') return;
         currentAdNetwork = 'network2';
-        showLoader();
-        const adCode = `
-            <script async="async" data-cfasync="false" src="https://pl25986483.effectiveratecpm.com/f7ff1fd652ef7b42474e417e75f6f193/invoke.js"><\/script>
-            <div id="container-f7ff1fd652ef7b42474e417e75f6f193"></div>
-        `;
-        loadAdInIframe(adCode);
-    }
-
-    function loadAdInIframe(adCode) {
+        
         const adContainer = document.getElementById('adContainer');
-        adContainer.innerHTML = ''; // Clear previous content
-
-        // Create a loader dynamically
+        // Clear and show loader
+        adContainer.innerHTML = '';
         const loader = document.createElement('div');
         loader.className = 'loader';
+        loader.id = 'adLoader';
         adContainer.appendChild(loader);
-
-        const iframe = document.createElement('iframe');
-        iframe.style.width = '100%';
-        iframe.style.height = '100%';
-        iframe.style.border = 'none';
-        adContainer.appendChild(iframe);
-
-        const doc = iframe.contentDocument || iframe.contentWindow.document;
-        doc.open();
-        doc.write(`
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <title>Ad</title>
-                <base target="_top"> <!-- Ensures links open in the parent window -->
-            </head>
-            <body>
-                ${adCode}
-            </body>
-            </html>
-        `);
-        doc.close();
-
-        // Check if the ad loaded successfully
-        iframe.onload = () => {
-            hideLoader();
-            console.log('Ad loaded successfully');
-        };
-        iframe.onerror = () => {
-            hideLoader();
-            console.error('Failed to load ad');
-        };
-    }
-
-    function showLoader() {
-        const adContainer = document.getElementById('adContainer');
-        const loader = document.createElement('div');
-        loader.className = 'loader';
-        adContainer.appendChild(loader);
+        
+        // Create the container for AdsTerra
+        const adDiv = document.createElement('div');
+        adDiv.id = 'container-f7ff1fd652ef7b42474e417e75f6f193';
+        adDiv.style.width = '100%';
+        adDiv.style.height = '100%';
+        adContainer.appendChild(adDiv);
+        
+        // Create and append the script
+        const script = document.createElement('script');
+        script.async = true;
+        script.setAttribute('data-cfasync', 'false');
+        script.src = 'https://pl25986483.effectiveratecpm.com/f7ff1fd652ef7b42474e417e75f6f193/invoke.js';
+        script.onload = hideLoader;
+        script.onerror = hideLoader;
+        document.body.appendChild(script);
+        
+        // Fallback to hide loader
+        setTimeout(hideLoader, 5000);
     }
 
     function hideLoader() {
-        const loader = document.querySelector('#adContainer .loader');
+        const loader = document.getElementById('adLoader');
         if (loader) {
-            loader.remove(); // Remove the loader from the DOM
+            loader.remove();
         }
     }
 </script>
