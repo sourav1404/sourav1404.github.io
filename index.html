@@ -1,129 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Ninja Breaking Tree Layers - Three.js Game</title>
-    
-    <meta name="coinzilla" content="0026025fd630dfb18e9d78076e7441bc" />
+    <title>Show Ad on Second Button Click</title>
     <style>
-        body { margin: 0; overflow: hidden; }
-        canvas { display: block; }
-        #instructions {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            color: white;
-            font-family: Arial, sans-serif;
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f9f9f9;
+        }
+        button {
+            padding: 15px 30px;
             font-size: 18px;
-            background: rgba(0,0,0,0.7);
-            padding: 10px;
-            border-radius: 5px;
-            z-index: 10;
+            cursor: pointer;
+            margin: 10px;
+        }
+        #adContainer {
+            display: none; /* Hidden initially */
+            width: 300px;
+            height: 250px;
+            background-color: #eee;
+            margin-top: 20px;
         }
     </style>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-<div id="instructions">Press SPACE or CLICK to break tree layer!<br>Score: <span id="score">0</span></div>
+<button onclick="firstButtonClick()">First Button (No Ad)</button>
+<button onclick="secondButtonClick()">Second Button (Show Ad)</button>
+
+<div id="adContainer">
+    <!-- Ad Script will be injected here on second button click -->
+</div>
 
 <script>
-let scene, camera, renderer;
-let treeLayers = [];
-let ninja, ninjaMaterial;
-let ninjaPosition = 0;
-let score = 0;
+let firstButtonClicked = false;
 
-// Initialize Three.js scene
-function init() {
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 5, 15);
+function firstButtonClick() {
+    alert('First button clicked! No ad shown.');
+    firstButtonClicked = true;
+}
 
-    renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    // Ground
-    const groundGeometry = new THREE.PlaneGeometry(20, 20);
-    const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x228B22, side: THREE.DoubleSide });
-    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    ground.rotation.x = -Math.PI / 2;
-    scene.add(ground);
-
-    // Create Tree (stacked layers)
-    for (let i = 0; i < 10; i++) {
-        addTreeLayer(i);
+function secondButtonClick() {
+    if (!firstButtonClicked) {
+        alert('You must click the first button before this.');
+        return;
     }
 
-    // Ninja (make it red so it's visible)
-    const ninjaGeometry = new THREE.BoxGeometry(1, 1, 1);
-    ninjaMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });  // Red color
-    ninja = new THREE.Mesh(ninjaGeometry, ninjaMaterial);
-    ninja.position.set(0, 0.5, 0);
-    scene.add(ninja);
+    const adContainer = document.getElementById('adContainer');
 
-    animate();
-}
+    // Inject the ad script only if not already injected
+    if (adContainer.innerHTML.trim() === '') {
+        const script = document.createElement('script');
+        script.async = true;
+        script.setAttribute('data-cfasync', 'false');
+        script.src = '//pl25980243.effectiveratecpm.com/ac180f58344d7a70fd529fb4052a960a/invoke.js';
 
-// Function to add a tree layer
-function addTreeLayer(index) {
-    const layerGeometry = new THREE.BoxGeometry(5, 1, 5);
-    const layerMaterial = new THREE.MeshBasicMaterial({ color: 0x8B4513 }); // Brown wood color
-    const layer = new THREE.Mesh(layerGeometry, layerMaterial);
-
-    layer.position.set(0, index + 0.5, 0);  // Each layer is 1 unit tall
-    scene.add(layer);
-    treeLayers.push(layer);
-}
-
-// Function to break the top tree layer
-function breakLayer() {
-    if (treeLayers.length === 0) return;
-
-    const topLayer = treeLayers.pop();
-    scene.remove(topLayer);
-
-    // Move ninja up
-    ninjaPosition++;
-    ninja.position.y = ninjaPosition + 0.5;
-
-    // Increase score
-    score++;
-    document.getElementById('score').innerText = score;
-
-    // Check for win condition
-    if (treeLayers.length === 0) {
-        document.getElementById('instructions').innerHTML = "All layers broken! You win! Final Score: " + score;
+        adContainer.appendChild(script);
+        const adDiv = document.createElement('div');
+        adDiv.id = 'container-ac180f58344d7a70fd529fb4052a960a';
+        adContainer.appendChild(adDiv);
     }
+
+    // Show the ad container
+    adContainer.style.display = 'block';
 }
-
-// Input handlers
-window.addEventListener('keydown', (e) => {
-    if (e.code === 'Space') {
-        breakLayer();
-    }
-});
-
-window.addEventListener('click', () => {
-    breakLayer();
-});
-
-// Render loop
-function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
-}
-
-// Handle window resizing
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-// Start the game
-init();
 </script>
 
 </body>
