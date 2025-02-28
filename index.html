@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ad Networks Switcher</title>
     <style>
         body {
@@ -18,6 +20,21 @@
             width: 100%;
             height: 300px;
             border: 1px solid #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -25,45 +42,98 @@
 
 <h2>Choose Ad Network</h2>
 
-<button onclick="showAdNetwork1()">Show Ad Network 1</button>
-<button onclick="showAdNetwork2()">Show Ad Network 2</button>
+<button onclick="showAdNetwork1()">Show Ad Network 1 (MonEtag)</button>
+<button onclick="showAdNetwork2()">Show Ad Network 2 (Ads Terra)</button>
 
-<iframe id="adContainer" src="about:blank"></iframe>
+<div id="adContainer"></div>
 
 <script>
+    let currentAdNetwork = null;
+
     function showAdNetwork1() {
-        const iframe = document.getElementById('adContainer');
+        if (currentAdNetwork === 'network1') return; // Prevent reloading the same ad
+        currentAdNetwork = 'network1';
+        showLoader();
         const adCode = `
-            <script>(function(d,z,s){
-                s.src='https://'+d+'/401/'+z;
-                try{(document.body||document.documentElement).appendChild(s)}catch(e){}
-            })('groleegni.net',9013611,document.createElement('script'))<\/script>
+            <script>
+                (function(d, z, s) {
+                    s.src = 'https://' + d + '/401/' + z;
+                    try {
+                        (document.body || document.documentElement).appendChild(s);
+                    } catch (e) {
+                        console.error('Error loading Ad Network 1:', e);
+                    }
+                })('groleegni.net', 9013611, document.createElement('script'));
+            <\/script>
         `;
-        loadAdInIframe(iframe, adCode);
+        loadAdInIframe(adCode);
     }
 
     function showAdNetwork2() {
-        const iframe = document.getElementById('adContainer');
+        if (currentAdNetwork === 'network2') return; // Prevent reloading the same ad
+        currentAdNetwork = 'network2';
+        showLoader();
         const adCode = `
-            <script async="async" data-cfasync="false" src="//pl25986483.effectiveratecpm.com/f7ff1fd652ef7b42474e417e75f6f193/invoke.js"><\/script>
+            <script async="async" data-cfasync="false" src="https://pl25986483.effectiveratecpm.com/f7ff1fd652ef7b42474e417e75f6f193/invoke.js"><\/script>
             <div id="container-f7ff1fd652ef7b42474e417e75f6f193"></div>
         `;
-        loadAdInIframe(iframe, adCode);
+        loadAdInIframe(adCode);
     }
 
-    function loadAdInIframe(iframe, adCode) {
+    function loadAdInIframe(adCode) {
+        const adContainer = document.getElementById('adContainer');
+        adContainer.innerHTML = ''; // Clear previous content
+
+        // Create a loader dynamically
+        const loader = document.createElement('div');
+        loader.className = 'loader';
+        adContainer.appendChild(loader);
+
+        const iframe = document.createElement('iframe');
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+        adContainer.appendChild(iframe);
+
         const doc = iframe.contentDocument || iframe.contentWindow.document;
         doc.open();
         doc.write(`
             <!DOCTYPE html>
             <html lang="en">
-            <head><title>Ad</title></head>
+            <head>
+                <title>Ad</title>
+                <base target="_top"> <!-- Ensures links open in the parent window -->
+            </head>
             <body>
-            ${adCode}
+                ${adCode}
             </body>
             </html>
         `);
         doc.close();
+
+        // Check if the ad loaded successfully
+        iframe.onload = () => {
+            hideLoader();
+            console.log('Ad loaded successfully');
+        };
+        iframe.onerror = () => {
+            hideLoader();
+            console.error('Failed to load ad');
+        };
+    }
+
+    function showLoader() {
+        const adContainer = document.getElementById('adContainer');
+        const loader = document.createElement('div');
+        loader.className = 'loader';
+        adContainer.appendChild(loader);
+    }
+
+    function hideLoader() {
+        const loader = document.querySelector('#adContainer .loader');
+        if (loader) {
+            loader.remove(); // Remove the loader from the DOM
+        }
     }
 </script>
 
